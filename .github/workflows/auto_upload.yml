@@ -1,0 +1,29 @@
+name: Twitch to YouTube Auto Upload
+
+on:
+    schedule:
+        - cron: "0 5 * * *" # JST 14:00頃
+    workflow_dispatch:
+
+jobs:
+    upload:
+        runs-on: ubuntu-latest
+        steps:
+            - uses: actions/checkout@v3
+
+            - name: Set up Python
+              uses: actions/setup-python@v4
+              with:
+                  python-version: "3.10"
+
+            - name: Install dependencies
+              run: |
+                  pip install -r requirements.txt
+
+            - name: Run script
+              env:
+                  TWITCH_CLIENT_ID: ${{ secrets.TWITCH_CLIENT_ID }}
+                  TWITCH_CLIENT_SECRET: ${{ secrets.TWITCH_CLIENT_SECRET }}
+                  TWITCH_USER_ID: ${{ secrets.TWITCH_USER_ID }}
+                  GOOGLE_TOKEN: ${{ secrets.GOOGLE_TOKEN }}
+              run: python main.py
