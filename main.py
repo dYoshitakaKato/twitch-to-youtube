@@ -15,7 +15,7 @@ TWITCH_USER_ID = os.getenv("TWITCH_USER_ID")
 # YouTube認証
 with open("token.json", "w", encoding="utf-8") as f:
     GOOGLE_TOKEN = os.getenv("GOOGLE_TOKEN")
-    json.dump(GOOGLE_TOKEN, f, ensure_ascii=False, indent=2)
+    json.dump(json.loads(GOOGLE_TOKEN), f, ensure_ascii=False, indent=2)
 creds = Credentials.from_authorized_user_file("token.json")
 
 
