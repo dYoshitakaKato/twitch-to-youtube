@@ -44,7 +44,7 @@ def execute():
         created = created.replace(tzinfo=datetime.timezone.utc)
         delta = datetime.datetime.now(datetime.timezone.utc) - created
         # 24時間以降48時間以内のアーカイブを取得
-        if delta < datetime.timedelta(hours=24) and delta > datetime.timedelta(
+        if delta > datetime.timedelta(hours=24) and delta < datetime.timedelta(
             hours=48
         ):
             vod_url = vod["url"]
