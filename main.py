@@ -31,8 +31,6 @@ def execute():
         },
     ).json()
     access_token = auth["access_token"]
-    print(access_token)
-
     headers = {"Client-ID": TWITCH_CLIENT_ID, "Authorization": f"Bearer {access_token}"}
     r = requests.get(
         f"https://api.twitch.tv/helix/videos?user_id={TWITCH_USER_ID}&type=archive",
