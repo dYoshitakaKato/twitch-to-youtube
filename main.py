@@ -59,7 +59,7 @@ def download_vod(vod_url):
     # Twitchの外部サービスで.m3u8からダウンロード or `streamlink`
     filename = "vod.mp4"
     start = time.time()
-    os.system(f"streamlink {vod_url} best -o {filename}")
+    os.system(f"streamlink {vod_url} best -f -o {filename}")
     end = time.time()  # 終了時刻
     print(f"Twitchダウンロード処理時間: {end - start:.2f} 秒")
     return filename
