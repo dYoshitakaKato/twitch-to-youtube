@@ -47,9 +47,12 @@ def execute():
         ):
             vod_url = vod["url"]
             title = vod["title"]
+            user_login = vod["user_login"]
+            channel_url = f"https://www.twitch.tv/{user_login}"
+            print(vod_url)
             if vod_url:
                 filename = download_vod(vod_url)
-                upload_to_youtube(filename, title)
+                upload_to_youtube(filename, title, channel_url)
     print("📤 Twitchビデオなし")
     return None, None
 
@@ -65,7 +68,7 @@ def download_vod(vod_url):
     return filename
 
 
-def upload_to_youtube(file_path, title):
+def upload_to_youtube(file_path, title, channel_url):
     print("📤 YouTubeにアップロード開始")
     youtube = build("youtube", "v3", credentials=creds)
     media = MediaFileUpload(
@@ -80,7 +83,7 @@ def upload_to_youtube(file_path, title):
         body={
             "snippet": {
                 "title": title,
-                "description": title,
+                "description": "Twitchのアーカイブ\n" + "チャンネル:" + channel_url,
             },
             "status": {"privacyStatus": "public"},
         },
