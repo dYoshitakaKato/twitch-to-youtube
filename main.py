@@ -5,7 +5,7 @@ import time
 from googleapiclient.discovery import build
 from googleapiclient.http import MediaFileUpload
 from google.oauth2.credentials import Credentials
-
+from google.auth.transport.requests import Request
 
 # 環境変数で取得（GitHubで設定）
 TWITCH_CLIENT_ID = os.getenv("TWITCH_CLIENT_ID")
@@ -17,6 +17,8 @@ with open("token.json", "w", encoding="utf-8") as f:
     GOOGLE_TOKEN = os.getenv("GOOGLE_TOKEN")
     json.dump(json.loads(GOOGLE_TOKEN), f, ensure_ascii=False, indent=2)
 creds = Credentials.from_authorized_user_file("token.json")
+if creds.expired:
+    creds.refresh(Request())
 
 
 def execute():
