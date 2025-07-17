@@ -49,12 +49,19 @@ def execute():
         ):
             vod_url = vod["url"]
             title = vod["title"]
+            description = vod["description"]
             user_login = vod["user_login"]
+            jst = created.astimezone(datetime.timezone(datetime.timedelta(hours=9)))
             channel_url = f"https://www.twitch.tv/{user_login}"
-            print(vod_url)
             if vod_url:
                 filename = download_vod(vod_url)
-                upload_to_youtube(filename, title, channel_url)
+                upload_to_youtube(
+                    filename,
+                    title,
+                    description,
+                    jst.strftime("%Y/%m/%d %H:%M"),
+                    channel_url,
+                )
     print("📤 Twitchビデオなし")
     return None, None
 
@@ -64,13 +71,13 @@ def download_vod(vod_url):
     # Twitchの外部サービスで.m3u8からダウンロード or `streamlink`
     filename = "vod.mp4"
     start = time.time()
-    os.system(f"streamlink {vod_url} best -f -o {filename}")
+    os.system(f"streamlink --loglevel error {vod_url} best -f -o {filename}")
     end = time.time()  # 終了時刻
     print(f"Twitchダウンロード処理時間: {end - start:.2f} 秒")
     return filename
 
 
-def upload_to_youtube(file_path, title, channel_url):
+def upload_to_youtube(file_path, title, description, created_at, channel_url):
     print("📤 YouTubeにアップロード開始")
     youtube = build("youtube", "v3", credentials=creds)
     media = MediaFileUpload(
@@ -79,15 +86,20 @@ def upload_to_youtube(file_path, title, channel_url):
         chunksize=1024 * 1024 * 8,  # 8MBごとに分割
         resumable=True,
     )
-
+    account_name = channel_url.replace("https://www.twitch.tv/", "")
     request = youtube.videos().insert(
         part="snippet,status",
         body={
             "snippet": {
                 "title": title,
-                "description": "Twitchのアーカイブ\n" + "チャンネル:" + channel_url,
+                "description": (
+                    f"{created_at} Twitch配信のアーカイブ\n"
+                    f"{description}\n\n"
+                    f"チャンネル: {channel_url}\n"
+                    f"X: https://x.com/{account_name}\n"
+                ),
             },
-            "status": {"privacyStatus": "public"},
+            "status": {"privacyStatus": "private"},
         },
         media_body=media,
     )
