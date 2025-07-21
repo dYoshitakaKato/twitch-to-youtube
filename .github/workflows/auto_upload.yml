@@ -2,7 +2,7 @@ name: Twitch to YouTube Auto Upload
 
 on:
     schedule:
-        - cron: "0 5 * * *" # JST 14:00頃
+        - cron: "0 14 * * *" # JST 23:00頃
     workflow_dispatch:
 
 jobs:
