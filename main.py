@@ -55,12 +55,14 @@ def execute():
             channel_url = f"https://www.twitch.tv/{user_login}"
             if vod_url:
                 filename = download_vod(vod_url)
+                thumbnail_path = download_twitch_thumbnail(vod["thumbnail_url"])
                 upload_to_youtube(
                     filename,
                     title,
                     description,
                     jst.strftime("%Y/%m/%d %H:%M"),
                     channel_url,
+                    thumbnail_path,
                 )
     print("📤 Twitchビデオなし")
     return None, None
@@ -77,7 +79,20 @@ def download_vod(vod_url):
     return filename
 
 
-def upload_to_youtube(file_path, title, description, created_at, channel_url):
+def download_twitch_thumbnail(thumbnail_url, output_path="thumbnail.jpg"):
+    url = thumbnail_url.replace("%{width}", "1280").replace("%{height}", "720")
+    response = requests.get(url)
+    if response.status_code == 200:
+        with open(output_path, "wb") as f:
+            f.write(response.content)
+        return output_path
+    else:
+        raise Exception("サムネイルの取得に失敗しました")
+
+
+def upload_to_youtube(
+    file_path, title, description, created_at, channel_url, thumbnail_path
+):
     print("📤 YouTubeにアップロード開始")
     youtube = build("youtube", "v3", credentials=creds)
     media = MediaFileUpload(
@@ -111,6 +126,11 @@ def upload_to_youtube(file_path, title, description, created_at, channel_url):
             print(f"Uploaded {int(status.progress() * 100)}%.")
     print("Upload Complete!")
     end = time.time()  # 終了時刻
+    video_id = response["id"]
+    youtube.thumbnails().set(
+        videoId=video_id,
+        media_body=MediaFileUpload(thumbnail_path, mimetype="image/jpeg"),
+    ).execute()
     print(f"youtubeアップロード処理時間: {end - start:.2f} 秒")
 
 
