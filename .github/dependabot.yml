@@ -1,0 +1,14 @@
+version: 2
+updates:
+  - package-ecosystem: "github-actions"
+    directory: "/"
+    schedule:
+      # Check for updates to GitHub Actions every week
+      interval: "weekly"
+  - package-ecosystem: "pip" # Python の場合
+    directory: "/" # requirements.txt がある場所
+    schedule:
+      interval: "weekly" # 毎週チェック
+    open-pull-requests-limit: 10
+    reviewers:
+      - "dYoshitakaKato" # レビュー担当者（オプション）
