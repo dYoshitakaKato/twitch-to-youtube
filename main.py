@@ -113,6 +113,8 @@ def upload_to_youtube(
                     f"チャンネル: {channel_url}\n"
                     f"X: https://x.com/{account_name}\n"
                 ),
+                "tags": os.getenv("YOUTUBE_TAGS").split(","),
+                "categoryId": "20",  # Gaming
             },
             "status": {"privacyStatus": "private"},
         },
