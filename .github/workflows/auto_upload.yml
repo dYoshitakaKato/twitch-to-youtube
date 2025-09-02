@@ -29,4 +29,5 @@ jobs:
                   YOUTUBE_TAGS: ${{ secrets.YOUTUBE_TAGS }}
                   PUBLISH_HOUR_JST: ${{ secrets.PUBLISH_HOUR_JST }}
                   PUBLISH_MINUTE_JST: ${{ secrets.PUBLISH_MINUTE_JST }}
+                  OPENAI_API_KEY: ${{ secrets.OPENAI_API_KEY }}
               run: python main.py
