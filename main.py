@@ -128,7 +128,7 @@ def upload_to_youtube(file_path, localizations, thumbnail_path):
         resumable=True,
     )
     request = youtube.videos().insert(
-        part="snippet,status,localizations,publishAt,notifySubscribers",
+        part="snippet,status,localizations",
         body={
             "snippet": {
                 "defaultLanguage": "ja",
