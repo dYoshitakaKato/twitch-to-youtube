@@ -109,6 +109,7 @@ def upload_to_youtube(file_path, localizations, thumbnail_path):
         body={
             "snippet": {
                 "defaultLanguage": "ja",
+                "defaultAudioLanguage": "ja",
                 "title": localizations["ja"]["title"],
                 "description": localizations["ja"]["description"],
                 "tags": os.getenv("YOUTUBE_TAGS").split(","),
