@@ -57,8 +57,7 @@ def execute():
             jst = created.astimezone(datetime.timezone(datetime.timedelta(hours=9)))
             channel_url = f"https://www.twitch.tv/{user_login}"
             if vod_url:
-                # filename = download_vod(vod_url)
-                filename = "vod.mp4"
+                filename = download_vod(vod_url)
                 thumbnail_path = download_twitch_thumbnail(vod["thumbnail_url"])
                 account_name = channel_url.replace("https://www.twitch.tv/", "")
                 created_at = jst.strftime("%Y/%m/%d %H:%M")
