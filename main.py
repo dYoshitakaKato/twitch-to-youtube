@@ -138,10 +138,8 @@ def upload_to_youtube(file_path, localizations, thumbnail_path):
                 "tags": os.getenv("YOUTUBE_TAGS").split(","),
                 "categoryId": "20",  # Gaming
             },
-            "status": {"privacyStatus": "private"},
+            "status": {"privacyStatus": "private", "publishAt": get_publish_at()},
             "localizations": localizations,
-            "publishAt": get_publish_at(),
-            "notifySubscribers": True,
         },
         media_body=media,
     )
