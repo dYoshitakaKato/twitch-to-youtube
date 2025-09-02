@@ -95,6 +95,29 @@ def download_twitch_thumbnail(thumbnail_url, output_path="thumbnail.jpg"):
         raise Exception("サムネイルの取得に失敗しました")
 
 
+def get_publish_at() -> str:
+    hour = int(os.getenv("PUBLISH_HOUR_JST"))
+    minute = int(os.getenv("PUBLISH_MINUTE_JST"))
+    jst_timezone = datetime.timezone(datetime.timedelta(hours=9))
+    now_jst = datetime.datetime.now(datetime.timezone.utc).astimezone(jst_timezone)
+    target_jst = datetime.datetime(
+        year=now_jst.year,
+        month=now_jst.month,
+        day=now_jst.day,
+        hour=hour,
+        minute=minute,
+        second=0,
+        microsecond=0,
+        tzinfo=jst_timezone,
+    ) + datetime.timedelta(days=1)
+    return to_rfc3339_utc(target_jst)
+
+
+def to_rfc3339_utc(dt: datetime.datetime) -> str:
+    # dt: timezone-aware（JSTなど）前提
+    return dt.astimezone(datetime.timezone.utc).strftime("%Y-%m-%dT%H:%M:%SZ")
+
+
 def upload_to_youtube(file_path, localizations, thumbnail_path):
     print("📤 YouTubeにアップロード開始")
     youtube = build("youtube", "v3", credentials=creds)
@@ -105,7 +128,7 @@ def upload_to_youtube(file_path, localizations, thumbnail_path):
         resumable=True,
     )
     request = youtube.videos().insert(
-        part="snippet,status,localizations",
+        part="snippet,status,localizations,publishAt,notifySubscribers",
         body={
             "snippet": {
                 "defaultLanguage": "ja",
@@ -117,6 +140,8 @@ def upload_to_youtube(file_path, localizations, thumbnail_path):
             },
             "status": {"privacyStatus": "private"},
             "localizations": localizations,
+            "publishAt": get_publish_at(),
+            "notifySubscribers": True,
         },
         media_body=media,
     )
