@@ -161,8 +161,8 @@ def upload_to_youtube(file_path, localizations, thumbnail_path):
 
 def create_localizations(title_ja, description_ja) -> dict:
     try:
-        title_en = translate_with_openai(title_ja, "en")
-        description_en = translate_with_openai(description_ja, "en")
+        title_en = translate_with_openai(title_ja, 100, "en")
+        description_en = translate_with_openai(description_ja, 5000, "en")
         return {
             "ja": {"title": title_ja, "description": description_ja},
             "en": {"title": title_en, "description": description_en},
@@ -172,7 +172,9 @@ def create_localizations(title_ja, description_ja) -> dict:
         return {"ja": {"title": title_ja, "description": description_ja}}
 
 
-def translate_with_openai(text: str, target_lang: str = "en") -> str:
+def translate_with_openai(
+    text: str, max_character_size: int, target_lang: str = "en"
+) -> str:
     """
     ChatGPTで翻訳。改行・絵文字・記号を保持し、意訳しすぎないようにしてください。
     出力は翻訳テキストのみにしてください。
@@ -184,7 +186,8 @@ def translate_with_openai(text: str, target_lang: str = "en") -> str:
     system = (
         "You are a professional translator. "
         "Translate the user's text. Keep line breaks, emojis, and punctuation. "
-        "Do not add explanations. Output only the translated text."
+        "Do not add explanations. Output only the translated text. "
+        f"The translated text must not exceed {max_character_size} characters."
     )
     user = f"Target language: {target_lang}\n\nTEXT:\n{text}"
     resp = client.chat.completions.create(
