@@ -64,8 +64,8 @@ def execute():
                 description_ja = (
                     f"{created_at}(JST) Twitch配信のアーカイブ\n"
                     f"{description}\n\n"
-                    f"チャンネル: {channel_url}\n"
-                    f"X: https://x.com/{account_name}\n"
+                    f"Twitch: {channel_url}\n"
+                    f"X(Twitter): https://x.com/{account_name}\n"
                 )
                 localizations = create_localizations(title_ja, description_ja)
                 upload_to_youtube(filename, localizations, thumbnail_path)
