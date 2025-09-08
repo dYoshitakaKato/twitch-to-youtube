@@ -57,13 +57,11 @@ def execute():
             vod_url = vod["url"]
             title_ja = vod["title"]
             description = vod["description"]
-            user_login = vod["user_login"]
             jst = created.astimezone(datetime.timezone(datetime.timedelta(hours=9)))
-            channel_url = f"https://www.twitch.tv/{user_login}"
             if vod_url:
                 filename = download_vod(vod_url)
                 thumbnail_path = download_twitch_thumbnail(vod["thumbnail_url"])
-                description_ja = create_description(channel_url, jst, description)
+                description_ja = create_description(jst, description)
                 localizations = create_localizations(title_ja, description_ja)
                 video_id = upload_to_youtube(filename, localizations, thumbnail_path)
                 playlist_id = extract_playlist_id(localizations["ja"]["description"])
@@ -73,14 +71,13 @@ def execute():
     return None, None
 
 
-def create_description(channel_url, jst, description):
-    account_name = channel_url.replace("https://www.twitch.tv/", "")
+def create_description(jst, description):
+    last_description_text = os.getenv("LAST_DESCRIPTION_TEXT", "")
     created_at = jst.strftime("%Y/%m/%d %H:%M")
     description_ja = (
         f"{created_at}(JST) Twitch配信のアーカイブ\n"
         f"{description}\n\n"
-        f"Twitch: {channel_url}\n"
-        f"X(Twitter): https://x.com/{account_name}\n"
+        f"{last_description_text}"
     )
     return description_ja
 
