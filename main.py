@@ -7,6 +7,8 @@ from googleapiclient.http import MediaFileUpload
 from google.oauth2.credentials import Credentials
 from google.auth.transport.requests import Request
 from openai import OpenAI
+import re
+import update_previous_video_in_playlist
 
 # 環境変数で取得（GitHubで設定）
 TWITCH_CLIENT_ID = os.getenv("TWITCH_CLIENT_ID")
@@ -14,6 +16,7 @@ TWITCH_CLIENT_SECRET = os.getenv("TWITCH_CLIENT_SECRET")
 TWITCH_USER_ID = os.getenv("TWITCH_USER_ID")
 OPENAI_MODEL = os.getenv("OPENAI_MODEL", "gpt-4o-mini")  # コスパ良
 OPENAI_API_KEY = os.getenv("OPENAI_API_KEY")
+PLAY_LIST_ID = os.getenv("PLAY_LIST_ID", "")
 
 # YouTube認証
 with open("token.json", "w", encoding="utf-8") as f:
@@ -22,6 +25,7 @@ with open("token.json", "w", encoding="utf-8") as f:
 creds = Credentials.from_authorized_user_file("token.json")
 if creds.expired:
     creds.refresh(Request())
+youtube = build("youtube", "v3", credentials=creds)
 
 
 def execute():
@@ -59,18 +63,26 @@ def execute():
             if vod_url:
                 filename = download_vod(vod_url)
                 thumbnail_path = download_twitch_thumbnail(vod["thumbnail_url"])
-                account_name = channel_url.replace("https://www.twitch.tv/", "")
-                created_at = jst.strftime("%Y/%m/%d %H:%M")
-                description_ja = (
-                    f"{created_at}(JST) Twitch配信のアーカイブ\n"
-                    f"{description}\n\n"
-                    f"Twitch: {channel_url}\n"
-                    f"X(Twitter): https://x.com/{account_name}\n"
-                )
+                description_ja = create_description(channel_url, jst, description)
                 localizations = create_localizations(title_ja, description_ja)
-                upload_to_youtube(filename, localizations, thumbnail_path)
+                video_id = upload_to_youtube(filename, localizations, thumbnail_path)
+                playlist_id = extract_playlist_id(localizations["ja"]["description"])
+                add_video_to_playlist(video_id, list(playlist_id, PLAY_LIST_ID))
+                update_previous_video_in_playlist.main(playlist_id, video_id)
     print("📤 Twitchビデオなし")
     return None, None
+
+
+def create_description(channel_url, jst, description):
+    account_name = channel_url.replace("https://www.twitch.tv/", "")
+    created_at = jst.strftime("%Y/%m/%d %H:%M")
+    description_ja = (
+        f"{created_at}(JST) Twitch配信のアーカイブ\n"
+        f"{description}\n\n"
+        f"Twitch: {channel_url}\n"
+        f"X(Twitter): https://x.com/{account_name}\n"
+    )
+    return description_ja
 
 
 def download_vod(vod_url):
@@ -118,9 +130,8 @@ def to_rfc3339_utc(dt: datetime.datetime) -> str:
     return dt.astimezone(datetime.timezone.utc).strftime("%Y-%m-%dT%H:%M:%SZ")
 
 
-def upload_to_youtube(file_path, localizations, thumbnail_path):
+def upload_to_youtube(file_path, localizations, thumbnail_path) -> str:
     print("📤 YouTubeにアップロード開始")
-    youtube = build("youtube", "v3", credentials=creds)
     media = MediaFileUpload(
         file_path,
         mimetype="video/mp4",
@@ -157,6 +168,7 @@ def upload_to_youtube(file_path, localizations, thumbnail_path):
         media_body=MediaFileUpload(thumbnail_path, mimetype="image/jpeg"),
     ).execute()
     print(f"youtubeアップロード処理時間: {end - start:.2f} 秒")
+    return video_id
 
 
 def create_localizations(title_ja, description_ja) -> dict:
@@ -199,6 +211,36 @@ def translate_with_openai(
         temperature=0.2,
     )
     return resp.choices[0].message.content.strip()
+
+
+def extract_playlist_id(text: str) -> str | None:
+    """
+    文章中のYouTube再生リストURLからplaylistのIDを抽出する
+    """
+    # 正規表現でlist=以降のIDを取得
+    match = re.search(r"list=([a-zA-Z0-9_-]+)", text)
+    if match:
+        return match.group(1)
+    return None
+
+
+def add_video_to_playlist(video_id, playlist_ids):
+    for playlist_id in playlist_ids:
+        if not playlist_id:
+            continue
+        youtube.playlistItems().insert(
+            part="snippet",
+            body={
+                "snippet": {
+                    "playlistId": playlist_id,
+                    "resourceId": {
+                        "kind": "youtube#video",
+                        "videoId": video_id,
+                    },
+                }
+            },
+        ).execute()
+    print("動画を再生リストに追加しました。")
 
 
 def main():
