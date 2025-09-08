@@ -30,4 +30,6 @@ jobs:
                   PUBLISH_HOUR_JST: ${{ secrets.PUBLISH_HOUR_JST }}
                   PUBLISH_MINUTE_JST: ${{ secrets.PUBLISH_MINUTE_JST }}
                   OPENAI_API_KEY: ${{ secrets.OPENAI_API_KEY }}
+                  LAST_DESCRIPTION_TEXT: ${{ secrets.LAST_DESCRIPTION_TEXT }}
+                  PLAY_LIST_ID: ${{ secrets.PLAY_LIST_ID }}
               run: python main.py
