@@ -32,4 +32,6 @@ jobs:
                   OPENAI_API_KEY: ${{ secrets.OPENAI_API_KEY }}
                   LAST_DESCRIPTION_TEXT: ${{ secrets.LAST_DESCRIPTION_TEXT }}
                   PLAY_LIST_ID: ${{ secrets.PLAY_LIST_ID }}
+                  NEXT_JA_PATTERN: ${{ secrets.NEXT_JA_PATTERN }}
+                  NEXT_EN_PATTERN: ${{ secrets.NEXT_EN_PATTERN }}
               run: python main.py

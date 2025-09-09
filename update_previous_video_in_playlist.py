@@ -3,12 +3,15 @@ from google.oauth2.credentials import Credentials
 from google.auth.transport.requests import Request
 import re
 import sys
+import os
 
 # YouTube認証
 creds = Credentials.from_authorized_user_file("token.json")
 if creds.expired:
     creds.refresh(Request())
 youtube = build("youtube", "v3", credentials=creds)
+NEXT_JA_PATTERN = os.getenv("NEXT_JA_PATTERN", "")
+NEXT_EN_PATTERN = os.getenv("NEXT_EN_PATTERN", "")
 
 
 def get_latest_video_in_playlist(playlist_id, index=1):
@@ -52,32 +55,28 @@ def update_video_details(edit_video_id, next_video_id):
         youtube.videos().list(part="snippet,localizations", id=edit_video_id).execute()
     )
     snippet = video["items"][0]["snippet"]
-    if re.search(r"Next\s*→\s*そのうち", snippet.get("description", "")):
+    if not re.search(NEXT_JA_PATTERN, snippet.get("description", "")):
+        print("Next pattern not found.")
         return
     localizations = video["items"][0]["localizations"]
     if localizations:
         # descriptionのみ編集
         description_ja = localizations["ja"].get("description", "")
         # Next → そのうち を Next → ${play_list_link} に置換
-        description_ja = re.sub(
-            r"(Next\s*→\s*)そのうち", r"\1" + next_video_id, description_ja
-        )
+        description_ja = re.sub(NEXT_JA_PATTERN, rf"\1{next_video_id}", description_ja)
         localizations["ja"]["description"] = description_ja
         if "en" in localizations:
             # descriptionのみ編集
             description_en = localizations["en"].get("description", "")
             # 英語: Next → Soon を Next → ${play_list_link} に置換
             description_en = re.sub(
-                r"(Next\s*→\s*)Soon", r"\1" + next_video_id, description_en
+                NEXT_EN_PATTERN, rf"\1{next_video_id}", description_en
             )
             localizations["en"]["description"] = description_en
     else:
         description_ja = snippet.get("description", "")
-        description_ja = re.sub(
-            r"(Next\s*→\s*)そのうち", r"\1" + next_video_id, description_ja
-        )
+        description_ja = re.sub(NEXT_JA_PATTERN, rf"\1{next_video_id}", description_ja)
         localizations["ja"]["description"] = description_ja
-
     body = {
         "id": edit_video_id,
         "snippet": {
