@@ -65,7 +65,7 @@ def execute():
                 localizations = create_localizations(title_ja, description_ja)
                 video_id = upload_to_youtube(filename, localizations, thumbnail_path)
                 playlist_id = extract_playlist_id(localizations["ja"]["description"])
-                add_video_to_playlist(video_id, list(playlist_id, PLAY_LIST_ID))
+                add_video_to_playlist(video_id, [playlist_id, PLAY_LIST_ID])
                 update_previous_video_in_playlist.main(playlist_id, video_id)
     print("📤 Twitchビデオなし")
     return None, None
