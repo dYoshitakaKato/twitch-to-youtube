@@ -8,7 +8,6 @@ from google.oauth2.credentials import Credentials
 from google.auth.transport.requests import Request
 from openai import OpenAI
 import re
-import update_previous_video_in_playlist
 
 # 環境変数で取得（GitHubで設定）
 TWITCH_CLIENT_ID = os.getenv("TWITCH_CLIENT_ID")
@@ -27,6 +26,7 @@ if creds.expired:
     creds.refresh(Request())
 youtube = build("youtube", "v3", credentials=creds)
 
+import update_previous_video_in_playlist
 
 def execute():
     print("📤 Twitchビデオ取得")
