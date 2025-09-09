@@ -92,17 +92,6 @@ def update_video_details(edit_video_id, next_video_id):
     youtube.videos().update(part="snippet,localizations", body=body).execute()
 
 
-def extract_playlist_id(text: str) -> str | None:
-    """
-    文章中のYouTube再生リストURLからplaylistのIDを抽出する
-    """
-    # 正規表現でlist=以降のIDを取得
-    match = re.search(r"list=([a-zA-Z0-9_-]+)", text)
-    if match:
-        return match.group(1)
-    return None
-
-
 def main(playlist_id, next_video_id):
     edit_video_id = get_latest_video_in_playlist(playlist_id)
     if not edit_video_id:
