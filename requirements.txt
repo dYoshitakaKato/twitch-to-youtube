@@ -42,5 +42,5 @@ uritemplate==4.2.0
 urllib3==2.5.0
 websocket-client==1.9.0
 wsproto==1.2.0
-openai==2.6.1
+openai==2.7.2
 httpx==0.28.1
